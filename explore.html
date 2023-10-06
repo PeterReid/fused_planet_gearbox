@@ -56,18 +56,18 @@ function drawPlanetary(x, y, sunRotation, orbitalRotation, toothSize, planetToot
             toothSize, planetToothCount, false, fillStyle);
     }
     
-    drawGear(x, y, planetBaseAngle0*(planetToothCount/ringToothCount) + orbitalRotation, toothSize, ringToothCount, true, fillStyle);
+    drawGear(x, y, planetBaseAngle0*(planetToothCount/ringToothCount) + orbitalRotation*(1 - planetToothCount/ringToothCount), toothSize, ringToothCount, true, fillStyle);
     
 }
 
 var sunRotation = 0;
 var orbitalRotation = 0;
 setInterval(function() {
-    sunRotation += .02;
-    //orbitalRotation += .01;
+    sunRotation += .06;
+    orbitalRotation += .02;
     if (sunRotation > Math.PI*2) sunRotation -= Math.PI*2;
     
     ctx.clearRect(0,0,700,700);
-    drawPlanetary(200,200,sunRotation, orbitalRotation, 20, 15, 12, '#ff000080');
+    drawPlanetary(200,200,sunRotation, orbitalRotation, 20, 12, 12, '#ff000080');
 }, 100);
 </script>
