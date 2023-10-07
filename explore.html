@@ -70,10 +70,8 @@ function toOrbitalRotation(planetToothCount, sunToothCount, sunRotation, ringRot
 }
 
 var sunRotation = 0;
-var orbitalRotation = 0;
 setInterval(function() {
     sunRotation += .06;
-    orbitalRotation += .02;
     
     var orbitalRotation = toOrbitalRotation(planetToothCount, sunToothCount, sunRotation, 0.0);
     
