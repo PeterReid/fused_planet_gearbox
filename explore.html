@@ -48,7 +48,7 @@ function drawPlanetary(x, y, sunRotation, orbitalRotation, toothSize, planetToot
     for (var i=0; i<3; i++) {
         var planetAngle = Math.PI*2/3*i + orbitalRotation;
         var planetBaseAngle = Math.PI/planetToothCount + Math.PI + planetAngle + (planetAngle-sunRotation)*(sunToothCount/planetToothCount);
-        if (i==0) planetBaseAngle0= planetBaseAngle;
+
         drawGear(
             x + Math.cos(planetAngle)*orbitalRadius, 
             y + Math.sin(planetAngle)*orbitalRadius, 
@@ -56,8 +56,9 @@ function drawPlanetary(x, y, sunRotation, orbitalRotation, toothSize, planetToot
             toothSize, planetToothCount, false, fillStyle);
     }
     
-    drawGear(x, y, planetBaseAngle0*(planetToothCount/ringToothCount) + orbitalRotation*(1 - planetToothCount/ringToothCount), toothSize, ringToothCount, true, fillStyle);
+    var ringRotation = Math.PI/ringToothCount*(1+planetToothCount) - sunRotation*sunToothCount/ringToothCount + orbitalRotation*(sunToothCount/ringToothCount + 1);
     
+    drawGear(x, y, ringRotation, toothSize, ringToothCount, true, fillStyle);
 }
 
 var sunRotation = 0;
@@ -65,9 +66,10 @@ var orbitalRotation = 0;
 setInterval(function() {
     sunRotation += .06;
     orbitalRotation += .02;
+    
     if (sunRotation > Math.PI*2) sunRotation -= Math.PI*2;
     
     ctx.clearRect(0,0,700,700);
-    drawPlanetary(200,200,sunRotation, orbitalRotation, 20, 12, 12, '#ff000080');
+    drawPlanetary(200,200,sunRotation, orbitalRotation, 20, 16, 11, '#ff000080');
 }, 100);
 </script>
