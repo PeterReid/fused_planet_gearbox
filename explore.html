@@ -61,13 +61,23 @@ function drawPlanetary(x, y, sunRotation, orbitalRotation, toothSize, planetToot
     drawGear(x, y, ringRotation, toothSize, ringToothCount, true, fillStyle);
 }
 
+var planetToothCount = 16;
+var sunToothCount = 11;
+
+function toOrbitalRotation(planetToothCount, sunToothCount, sunRotation, ringRotation) {
+    var ringToothCount = planetToothCount*2 + sunToothCount;
+    return ( ringRotation + sunRotation*sunToothCount/ringToothCount - Math.PI/ringToothCount*(1+planetToothCount))/(sunToothCount/ringToothCount + 1);
+}
+
 var sunRotation = 0;
 var orbitalRotation = 0;
 setInterval(function() {
     sunRotation += .06;
     orbitalRotation += .02;
     
-    if (sunRotation > Math.PI*2) sunRotation -= Math.PI*2;
+    var ringToothCount = planetToothCount*2 + sunToothCount;
+    
+    var orbitalRotation = toOrbitalRotation(planetToothCount, sunToothCount, sunRotation, 0.0);
     
     ctx.clearRect(0,0,700,700);
     drawPlanetary(200,200,sunRotation, orbitalRotation, 20, 16, 11, '#ff000080');
