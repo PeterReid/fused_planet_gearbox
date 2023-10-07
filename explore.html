@@ -79,10 +79,13 @@ setInterval(function() {
     
     var orbitalRotation = toOrbitalRotation(inputPlanetToothCount, inputSunToothCount, inputSunRotation, 0.0);
     
-    var planetBaseAngle0 = Math.PI/inputPlanetToothCount + Math.PI + orbitalRotation + (orbitalRotation-inputSunRotation)*(inputSunToothCount/inputPlanetToothCount);
+    var inputPlanetBaseAngle = Math.PI/inputPlanetToothCount + Math.PI + orbitalRotation + (orbitalRotation-inputSunRotation)*(inputSunToothCount/inputPlanetToothCount);
+    
+    var outputSunRotation = orbitalRotation-(inputPlanetBaseAngle - (Math.PI/outputPlanetToothCount + Math.PI + orbitalRotation))/(outputSunToothCount/outputPlanetToothCount);
+    
     
     ctx.clearRect(0,0,700,700);
     drawPlanetary(200,200,inputSunRotation, orbitalRotation, inputToothSize, inputPlanetToothCount, inputSunToothCount, '#ff000080');
-    drawPlanetary(200,200,0, orbitalRotation, outputToothSize, outputPlanetToothCount, outputSunToothCount, '#00ff0080');
+    drawPlanetary(200,200,outputSunRotation, orbitalRotation, outputToothSize, outputPlanetToothCount, outputSunToothCount, '#00ff0080');
 }, 100);
 </script>
