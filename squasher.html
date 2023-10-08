@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<canvas width="500" height="500">
+
+<script>
+var canvas = document.getElementsByTagName('canvas')[0];
+var ctx = canvas.getContext("2d");
+
+var lengthConstraintStrength = 0.01;
+var angleConstraintStrength = 0.1;
+
+var pts = [];
+var nPoints = 40*3;
+if (nPoints%3 != 0) {
+    throw 'number of points should be divisible by 3, so we can pin things nicely'
+}
+for (var i=0; i<nPoints; i++) {
+    var angle = Math.PI*2 * i/nPoints;
+    pts.push([Math.cos(angle), Math.sin(angle)]);
+}
+
+function length(a) {
+    return Math.sqrt(a[0]*a[0] + a[1]*a[1]);
+}
+function dot(a, b) {
+    return a[0]*b[0] + a[1]*b[1];
+}
+function minus(a, b) {
+    return [a[0] - b[0], a[1] - b[1]];
+}
+function distance(a, b) {
+    return length(minus(b, a));
+}
+function angleAtPt(idx) {
+    var prev = pts[(idx + nPoints-1)%nPoints];
+    var here = pts[idx];
+    var next = pts[(idx+1)%nPoints];
+    var prevToHere = minus(here, prev);
+    var hereToNext = minus(next, here);
+    // a.b = |a| |b| cos(theta)
+    // theta = acos(a.b / (|a| |b|))
+    var angle = Math.acos(dot(prevToHere, hereToNext) / (length(prevToHere)*length(hereToNext)))   
+    return angle;
+}
+function divide(a, x) {
+    return [a[0]/x, a[1]/x];
+}
+function mult(a, x) {
+    return [a[0]*x, a[1]*x];
+}
+function increase(a, b) {
+    a[0] += b[0];
+    a[1] += b[1];
+}
+
+var idealLength = distance(pts[0], pts[1]);
+var idealAngle = angleAtPt(0);
+
+
+function draw() {
+    ctx.clearRect(0,0,700,700);
+    
+    var center = 250;
+    var scale = 200;
+    ctx.beginPath();
+    for (var i=0; i<=nPoints; i++) {
+        var pt = pts[i%nPoints];
+        ctx.lineTo(center + pt[0]*scale, center+pt[1]*scale);
+    }
+    ctx.stroke();
+    for (var i=0; i<nPoints; i++) {
+        var pt = pts[i%nPoints];
+        ctx.beginPath();
+        ctx.arc(center + pt[0]*scale, center+pt[1]*scale, 5, 0, 2 * Math.PI); 
+        ctx.fillStyle = (i*3) % nPoints==0 ? '#ff0000' : '#000000'; // highlight pinned points
+        ctx.fill();
+    }
+}
+
+function step() {
+    var deltas = [];
+    for (var i=0; i<nPoints; i++) {
+        deltas.push([0,0]);
+    }
+    
+    var totalWrongness = 0;
+    
+    // Length constraint
+    for (var i=0; i<nPoints; i++) {
+        var hereToNext = minus(pts[(i+1)%nPoints], pts[i]);
+        var hereToNextLength = length(hereToNext);
+        var hereToNextDirection = divide(hereToNext, hereToNextLength);
+        
+        var prevToHere = minus(pts[i], pts[(i + nPoints - 1)%nPoints]);
+        var prevToHereLength = length(prevToHere);
+        var prevToHereDirection = divide(prevToHere, prevToHereLength);
+        
+        var wrongness = hereToNextLength - idealLength;
+        totalWrongness += wrongness*wrongness;
+        //console.log(i, wrongness.toFixed(5))
+        var hereToNextPush = mult(hereToNextDirection, wrongness * lengthConstraintStrength);
+        increase(deltas[i], hereToNextPush);
+        increase(deltas[(i+1)%nPoints], mult(hereToNextPush, -1));
+        
+        
+        
+        var angleWrongness = angleAtPt(i) - idealAngle;
+        //console.log(i, angleWrongness.toFixed(5));
+        // If the angle is too shallow, we can push away from both of them.
+        // (This will work unless they are in a perfectly straight line, which we should not get
+        // as long as we transition smoothly from a starting circle.)
+        var anglePrevToHerePush = mult(prevToHereDirection, -angleWrongness * Math.abs(angleWrongness) * angleConstraintStrength);
+        var angleNextToHerePush = mult(hereToNextDirection, angleWrongness * Math.abs(angleWrongness) * angleConstraintStrength);
+        increase(deltas[i], anglePrevToHerePush);
+        increase(deltas[i], angleNextToHerePush);
+    }
+    
+    
+    for (var i=0; i<nPoints; i++) {
+        if ((i*3) % nPoints == 0) continue; // do not pull pinned points
+        increase(pts[i], deltas[i]);
+    }
+    
+    return totalWrongness;
+}
+
+for (var round=0; round<40; round++) {
+    for (var i=0; i<3; i++) {
+        var idx = i*nPoints/3;
+        pts[idx][0] += Math.cos(2*Math.PI * i / 3) * 0.001;
+        pts[idx][1] += Math.sin(2*Math.PI * i / 3) * 0.001;
+    }
+
+    for (var i=0; i<10000; i++) {
+        step();
+    }
+}
+for (var i=0; i<20000; i++) {
+    step();
+}
+
+console.log(step());
+
+console.log(length(pts[0]))
+console.log('should be close: ', length(pts[Math.round(nPoints/6)]))
+for (var i=0; i<nPoints; i++) {
+    console.log(i, distance(pts[i], pts[(i+1)%nPoints])-idealLength)
+}
+
+var totalLength = 0;
+for (var i=0; i<nPoints; i++) {
+    totalLength += distance(pts[i], pts[(i+1)%nPoints]);
+}
+var scaleBy = 2 * Math.PI / totalLength;
+for (var i=0; i<nPoints; i++) {
+    pts[i] = mult(pts[i], scaleBy);
+}
+console.log('scalin by ' + scaleBy);
+
+console.log(length(pts[0]))
+console.log('should be close: ', length(pts[Math.round(nPoints/6)]))
+for (var i=0; i<nPoints; i++) {
+    console.log(i, distance(pts[i], pts[(i+1)%nPoints])-idealLength)
+}
+
+
+draw();
+
+</script>
