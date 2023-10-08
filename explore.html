@@ -61,7 +61,7 @@ function drawPlanetary(x, y, sunRotation, orbitalRotation, toothSize, planetToot
     drawGear(x, y, ringRotation, toothSize, ringToothCount, true, fillStyle);
 }
 
-var inputToothSize = 20;
+var inputToothSize = 30;
 var inputPlanetToothCount = 16;
 var inputSunToothCount = 11;
 var outputPlanetToothCount = 15;
@@ -85,7 +85,7 @@ setInterval(function() {
     
     
     ctx.clearRect(0,0,700,700);
-    drawPlanetary(200,200,inputSunRotation, orbitalRotation, inputToothSize, inputPlanetToothCount, inputSunToothCount, '#ff000080');
-    drawPlanetary(200,200,outputSunRotation, orbitalRotation, outputToothSize, outputPlanetToothCount, outputSunToothCount, '#00ff0080');
+    drawPlanetary(350,350,inputSunRotation, orbitalRotation, inputToothSize, inputPlanetToothCount, inputSunToothCount, '#ff000080');
+    drawPlanetary(350,350,outputSunRotation, orbitalRotation, outputToothSize, outputPlanetToothCount, outputSunToothCount, '#00ff0080');
 }, 100);
 </script>
