@@ -34,28 +34,39 @@ def mult(a, x):
 def offset_by_distance_and_direction(a, distance, direction):
     return add(a, mult(normalize(direction), distance))
 
+
+# For line segments a->b->c, generate a vector that splits the angle ABC
+def split_angle(a, b, c):
+    return add(normalize(minus(b, a)), normalize(minus(b, c)))
+
 def distort_point(x, y, z):
     radius = math.sqrt(x*x + y*y)
     angle = math.atan2(y, x)
+    
+    
+    gear_outside_diameter = 98
+    gear_root_diameter = 91
+    bend_radius = (gear_root_diameter/2.0 + gear_outside_diameter/2.0)/2.0 # The gear should bend around the middle of the solid bit, so halfway between the root (base of the teeth) and outside
+   
+    offset_from_bend_radius = radius - bend_radius
     
     continuous_index = angle * len(curve) / (2 * math.pi)
     
     index = math.floor(continuous_index)
     progress = continuous_index - index
-    curve_from = curve[index];
-    curve_to = curve[(index+1)%len(curve)]
+    before_curve_from = mult(curve[(index+ len(curve)-1)%len(curve)], bend_radius)
+    curve_from = mult(curve[index], bend_radius)
+    curve_to = mult(curve[(index+1)%len(curve)], bend_radius)
+    after_curve_to = mult(curve[(index+2)%len(curve)], bend_radius)
     
-    perpendicular_to_curve = perpendicular(minus(curve_to, curve_from))
+    away_from_curve_from = split_angle(before_curve_from, curve_from, curve_to)
+    away_from_curve_to = split_angle(curve_from, curve_to, after_curve_to)
     
-    curve_interp = interpolate_point_linearly(curve_from, curve_to, progress)
+    curve_from_scooted = offset_by_distance_and_direction(curve_from, offset_from_bend_radius, away_from_curve_from)
+    curve_to_scooted = offset_by_distance_and_direction(curve_to, offset_from_bend_radius, away_from_curve_to)
     
-    gear_outside_diameter = 149.0
-    gear_root_diameter = 136.5
-    bend_radius = (gear_root_diameter/2.0 + gear_outside_diameter/2.0)/2.0 # The gear should bend around the middle of the solid bit, so halfway between the root (base of the teeth) and outside
-   
-    offset_from_bend_radius = radius - bend_radius
+    x,y = interpolate_point_linearly(curve_from_scooted, curve_to_scooted, progress)
     
-    x, y = offset_by_distance_and_direction(mult(curve_interp, bend_radius), offset_from_bend_radius, perpendicular_to_curve)
     
     
     return (x,y,z)
