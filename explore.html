@@ -61,11 +61,60 @@ function drawPlanetary(x, y, sunRotation, orbitalRotation, toothSize, planetToot
     drawGear(x, y, ringRotation, toothSize, ringToothCount, true, fillStyle);
 }
 
+function gcd(x, y) {
+  while(y) {
+    var t = y;
+    y = x % y;
+    x = t;
+  }
+  return x;
+}
+
+function findToothCounts() {
+    var inputSunRotation = 1.0;
+    
+    var best = 0;
+    for (var inputPlanetToothCount = 7; inputPlanetToothCount < 20; inputPlanetToothCount++) {
+        for (var inputSunToothCount = 7; inputSunToothCount < 20; inputSunToothCount++) {
+            var inputRingToothCount = inputPlanetToothCount*2 + inputSunToothCount;
+            
+            if ((inputSunToothCount + inputRingToothCount) % 3 != 0) continue;
+            if (gcd(inputSunToothCount, inputPlanetToothCount) != 1) continue;
+            if (gcd(inputPlanetToothCount, inputRingToothCount) != 1) continue;
+            
+            var orbitalRotation = toOrbitalRotation(inputPlanetToothCount, inputSunToothCount, inputSunRotation, 0.0);
+            var inputPlanetBaseAngle = Math.PI/inputPlanetToothCount + Math.PI + orbitalRotation + (orbitalRotation-inputSunRotation)*(inputSunToothCount/inputPlanetToothCount);
+            for (var outputPlanetToothCount = 7; outputPlanetToothCount < 20; outputPlanetToothCount++) {
+                for (var outputSunToothCount = 7; outputSunToothCount < 20; outputSunToothCount++) {
+                    var outputRingToothCount = outputPlanetToothCount*2 + outputSunToothCount;
+                
+                    if ((outputSunToothCount + outputRingToothCount) % 3 != 0) continue;
+                    if (gcd(outputSunToothCount, outputPlanetToothCount) != 1) continue;
+                    if (gcd(outputPlanetToothCount, outputRingToothCount) != 1) continue;
+            
+                    //console.log(outputRingToothCount, outputSunToothCount)
+                    
+                    var outputSunRotation = orbitalRotation-(inputPlanetBaseAngle - (Math.PI/outputPlanetToothCount + Math.PI + orbitalRotation))/(outputSunToothCount/outputPlanetToothCount);
+
+                    var outputRingRotation = Math.PI/outputRingToothCount*(1+outputPlanetToothCount) - outputSunRotation*outputSunToothCount/outputRingToothCount + orbitalRotation*(outputSunToothCount/outputRingToothCount + 1);
+    
+                    if (Math.abs(outputRingRotation) < 1e-5) {
+                        continue; // no movement is not helpful
+                    }
+                    if (Math.abs(outputRingRotation) < 1.0/30) {
+                        console.log(inputPlanetToothCount, inputSunToothCount, outputPlanetToothCount, outputSunToothCount, outputRingRotation.toFixed(4))
+                    }
+                }
+            }
+        }
+    }
+}
+
 var inputToothSize = 30;
-var inputPlanetToothCount = 16;
-var inputSunToothCount = 11;
-var outputPlanetToothCount = 15;
-var outputSunToothCount = 15;
+var inputPlanetToothCount = 11;
+var inputSunToothCount = 10;
+var outputPlanetToothCount = 13;
+var outputSunToothCount = 11;
 var outputToothSize = inputToothSize * (inputSunToothCount+inputPlanetToothCount) / (outputSunToothCount+outputPlanetToothCount);
 
 function toOrbitalRotation(planetToothCount, sunToothCount, sunRotation, ringRotation) {

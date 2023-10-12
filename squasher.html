@@ -123,7 +123,7 @@ function step() {
     return totalWrongness;
 }
 
-for (var round=0; round<40; round++) {
+for (var round=0; round<60; round++) {
     for (var i=0; i<3; i++) {
         var idx = i*nPoints/3;
         pts[idx][0] += Math.cos(2*Math.PI * i / 3) * 0.001;
